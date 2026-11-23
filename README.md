@@ -26,7 +26,7 @@ explanation and a flag for synthetic vs. real). Label balance is close to even (
 | Notebook | What it does |
 |---|---|
 | `Data_exploration.ipynb` | Loads MedHAL from Hugging Face; shape, missing values, label and synthetic/real distributions |
-| `Preprocessing.ipynb` | Builds a single `full_text` input from context and statement, cleans it, and writes the full dataset to CSV/JSONL in 100,000-row chunks |
+| `Preprocessing.ipynb` | Cleans each row and joins statement, context and explanation into one `full_text` input; writes the full dataset to CSV/JSONL in 100,000-row chunks |
 | `Model_training.ipynb` | Fine-tunes `emilyalsentzer/Bio_ClinicalBERT` (PyTorch, Hugging Face Transformers, AdamW, lr 2e-5, max 512 tokens) and evaluates it |
 
 The notebooks were run on Google Colab with a GPU and read/write files on Google Drive, so the
@@ -41,6 +41,11 @@ and adversarial data generation. Its own README explains how to run it.
 
 ## Limitations
 
+- **The input includes MedHAL's `explanation` field, which can reveal the label.** Explanations
+  for true statements are often "The statement is factual.", and explanations for false ones state
+  the correct fact. The scores above therefore probably overstate how well the model detects
+  hallucinations from the statement and context alone. The fix is to rebuild `full_text` from
+  `statement` and `context` only and retrain.
 - Training and testing used the first 20,000 rows of the preprocessed file, not a random sample
   of all 819,608, so results may not hold across every source in MedHAL.
 - One random 80/20 split; no cross-validation or confidence intervals.
